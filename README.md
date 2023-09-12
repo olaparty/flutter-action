@@ -9,10 +9,22 @@ Use specific version and channel:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: subosito/flutter-action@v2
+- uses: olaparty/flutter-action@v2
   with:
     flutter-version: '3.7.7'
     channel: 'stable'
+- run: flutter --version
+```
+
+Use specific repo and branch(channel):
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: olaparty/flutter-action@v2
+  with:
+    flutter-repo: 'https://github.com/olapaty/flutter.git'
+    channel: 'main'
 - run: flutter --version
 ```
 
@@ -21,7 +33,7 @@ Use latest release for particular channel:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: subosito/flutter-action@v2
+- uses: olaparty/flutter-action@v2
   with:
     channel: 'stable' # or: 'beta', 'dev' or 'master'
 - run: flutter --version
@@ -32,7 +44,7 @@ Use latest release for particular version and/or channel:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: subosito/flutter-action@v2
+- uses: olaparty/flutter-action@v2
   with:
     flutter-version: '1.22.x'
     channel: 'dev'
@@ -44,7 +56,7 @@ Use particular version on any channel:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: subosito/flutter-action@v2
+- uses: olaparty/flutter-action@v2
   with:
     flutter-version: '2.x'
     channel: 'any'
@@ -60,7 +72,7 @@ steps:
   with:
     distribution: 'zulu'
     java-version: '11'
-- uses: subosito/flutter-action@v2
+- uses: olaparty/flutter-action@v2
   with:
     flutter-version: '3.7.7'
 - run: flutter pub get
@@ -77,7 +89,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: subosito/flutter-action@v2
+    - uses: olaparty/flutter-action@v2
       with:
         channel: 'stable'
         architecture: x64
@@ -91,7 +103,7 @@ Build for the web:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: subosito/flutter-action@v2
+- uses: olaparty/flutter-action@v2
   with:
     channel: 'stable'
 - run: flutter pub get
@@ -107,7 +119,7 @@ jobs:
    runs-on: windows-latest
    steps:
      - uses: actions/checkout@v3
-     - uses: subosito/flutter-action@v2
+     - uses: olaparty/flutter-action@v2
        with:
          channel: 'beta'
      - run: flutter config --enable-windows-desktop
@@ -122,7 +134,7 @@ jobs:
    runs-on: ubuntu-latest
    steps:
      - uses: actions/checkout@v3
-     - uses: subosito/flutter-action@v2
+     - uses: olaparty/flutter-action@v2
        with:
          channel: 'stable'
      - run: |
@@ -140,7 +152,7 @@ jobs:
    runs-on: macos-latest
    steps:
      - uses: actions/checkout@v3
-     - uses: subosito/flutter-action@v2
+     - uses: olaparty/flutter-action@v2
        with:
          channel: 'stable'
          architecture: x64
@@ -153,7 +165,7 @@ Integration with `actions/cache`:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: subosito/flutter-action@v2
+- uses: olaparty/flutter-action@v2
   with:
     channel: 'stable'
     cache: true
@@ -178,7 +190,7 @@ Use outputs from `flutter-action`:
 steps:
 - uses: actions/checkout@v3
 - id: flutter-action
-  uses: subosito/flutter-action@v2
+  uses: olaparty/flutter-action@v2
   with:
     channel: 'stable'
 - run: |

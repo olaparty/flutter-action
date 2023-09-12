@@ -68,8 +68,9 @@ PRINT_ONLY=""
 TEST_MODE=false
 ARCH=""
 VERSION=""
+REPO_URL=""
 
-while getopts 'tc:k:pa:n:' flag; do
+while getopts 'tc:k:pa:n:r:' flag; do
 	case "$flag" in
 	c) CACHE_PATH="$OPTARG" ;;
 	k) CACHE_KEY="$OPTARG" ;;
@@ -77,6 +78,7 @@ while getopts 'tc:k:pa:n:' flag; do
 	t) TEST_MODE=true ;;
 	a) ARCH="$(echo "$OPTARG" | awk '{print tolower($0)}')" ;;
 	n) VERSION="$OPTARG" ;;
+	r) REPO_URL="$OPTARG" ;;
 	?) exit 2 ;;
 	esac
 done
@@ -96,7 +98,7 @@ else
 	RELEASE_MANIFEST=$(curl --silent --connect-timeout 15 --retry 5 "$MANIFEST_URL")
 fi
 
-if [[ "$CHANNEL" == "master" ]]; then
+if [[ "$CHANNEL" == "master" || -n "$REPO_URL" ]]; then
 	VERSION_MANIFEST="{\"channel\":\"$CHANNEL\",\"version\":\"$CHANNEL\",\"dart_sdk_arch\":\"$ARCH\",\"hash\":\"$CHANNEL\",\"sha256\":\"$CHANNEL\"}"
 else
 	VERSION_MANIFEST=$(echo "$RELEASE_MANIFEST" | filter_by_channel "$CHANNEL" | filter_by_arch "$ARCH" | filter_by_version "$VERSION")
@@ -155,8 +157,12 @@ if [[ "$PRINT_ONLY" == true ]]; then
 fi
 
 if [[ ! -x "$CACHE_PATH/bin/flutter" ]]; then
-	if [[ "$CHANNEL" == "master" ]]; then
-		git clone -b master https://github.com/flutter/flutter.git "$CACHE_PATH"
+    
+	if [[ "$CHANNEL" == "master" && -z "$REPO_URL" ]];then
+		REPO_URL="https://github.com/flutter/flutter.git" 
+	fi
+	if [[ -n "$REPO_URL" ]]; then
+		git clone --depth 1 -b "$CHANNEL" "$REPO_URL" "$CACHE_PATH"
 	else
 		archive_url=$(echo "$VERSION_MANIFEST" | jq -r '.archive')
 		download_archive "$archive_url" "$CACHE_PATH"

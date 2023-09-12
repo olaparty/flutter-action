@@ -125,6 +125,8 @@ jobs:
       shell: bash
     - run: ./setup.sh -t -p master                 | grep '/Users/runner/work/_temp/flutter/master-master-x64'
       shell: bash
+    - run: ./setup.sh -t -p master -r "https://github.com/zhilei-ola/flutter.git"                | grep '/Users/runner/work/_temp/flutter/master-master-x64'
+      shell: bash
     - run: ./setup.sh -t -p -k 'custom-:channel:-:version:-:hash:'       | grep 'custom-stable-3.7.7-2ad6cd72c040113b47ee9055e722606a490ef0da'
       shell: bash
     - run: ./setup.sh -t -p -k 'custom-:channel:-:version:-:sha256:'     | grep 'custom-stable-3.7.7-78957b52f023a0d811add27eddc59b1a59d27d2ada5df123f39d0315708fb2d5'

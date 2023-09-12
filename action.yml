@@ -13,6 +13,10 @@ inputs:
     description: 'The Flutter build release channel'
     required: false
     default: 'stable'
+  flutter-repo:
+    description: 'The Flutter repo url'
+    required: false
+    default: ''
   cache:
     description: 'Cache the Flutter SDK'
     required: false
@@ -44,7 +48,7 @@ runs:
   using: 'composite'
   steps:
     - id: flutter-action
-      run: $GITHUB_ACTION_PATH/setup.sh -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
+      run: $GITHUB_ACTION_PATH/setup.sh -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
       shell: bash
     - if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v3
@@ -54,5 +58,5 @@ runs:
         restore-keys: |
           ${{ steps.flutter-action.outputs.CACHE-KEY }}-${{ hashFiles('**/pubspec.lock') }}
           ${{ steps.flutter-action.outputs.CACHE-KEY }}
-    - run: $GITHUB_ACTION_PATH/setup.sh -c '${{ steps.flutter-action.outputs.CACHE-PATH }}' -n '${{ steps.flutter-action.outputs.VERSION }}' -a '${{ steps.flutter-action.outputs.ARCHITECTURE }}' ${{ steps.flutter-action.outputs.CHANNEL }}
+    - run: $GITHUB_ACTION_PATH/setup.sh -c '${{ steps.flutter-action.outputs.CACHE-PATH }}' -r '${{ inputs.flutter-repo }}' -n '${{ steps.flutter-action.outputs.VERSION }}' -a '${{ steps.flutter-action.outputs.ARCHITECTURE }}' ${{ steps.flutter-action.outputs.CHANNEL }}
       shell: bash
