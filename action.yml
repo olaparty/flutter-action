@@ -20,7 +20,7 @@ inputs:
   cache:
     description: 'Cache the Flutter SDK'
     required: false
-    default: false
+    default: 'false'
   cache-key:
     description: 'Identifier for the Flutter SDK cache'
     required: false
@@ -28,7 +28,7 @@ inputs:
   cache-path:
     description: 'Flutter SDK cache path'
     required: false
-    default: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
+    default: ''
   architecture:
     description: 'The architecture of Flutter SDK executable (x64 or arm64)'
     required: false
@@ -48,6 +48,8 @@ runs:
   using: 'composite'
   steps:
     - id: flutter-action
+      env:
+        USE_CACHE: ${{inputs.cache}}
       run: $GITHUB_ACTION_PATH/setup.sh -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
       shell: bash
     - if: ${{ inputs.cache == 'true' }}

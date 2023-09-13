@@ -1,5 +1,4 @@
 #!/bin/bash
-
 check_command() {
 	command -v "$1" >/dev/null 2>&1
 }
@@ -89,18 +88,20 @@ CHANNEL="${ARR_CHANNEL[0]}"
 [[ -z $CHANNEL ]] && CHANNEL=stable
 [[ -z $VERSION ]] && VERSION=any
 [[ -z $ARCH ]] && ARCH=x64
-[[ -z $CACHE_PATH ]] && CACHE_PATH="$RUNNER_TEMP/flutter/:channel:-:version:-:arch:"
+if [[ -z $CACHE_PATH ]]; then
+    CACHE_PATH="$RUNNER_TEMP/flutter/:channel:-:version:-:arch:"
+    [[ $USE_CACHE == 'false' ]] && CACHE_PATH="$HOME/_flutter/:channel:-:version:-:arch:"
+fi 
 [[ -z $CACHE_KEY ]] && CACHE_KEY="flutter-:os:-:channel:-:version:-:arch:-:hash:"
-
-if [[ "$TEST_MODE" == true ]]; then
-	RELEASE_MANIFEST=$(cat "$(dirname -- "${BASH_SOURCE[0]}")/test/$MANIFEST_JSON_PATH")
-else
-	RELEASE_MANIFEST=$(curl --silent --connect-timeout 15 --retry 5 "$MANIFEST_URL")
-fi
 
 if [[ "$CHANNEL" == "master" || -n "$REPO_URL" ]]; then
 	VERSION_MANIFEST="{\"channel\":\"$CHANNEL\",\"version\":\"$CHANNEL\",\"dart_sdk_arch\":\"$ARCH\",\"hash\":\"$CHANNEL\",\"sha256\":\"$CHANNEL\"}"
 else
+	if [[ "$TEST_MODE" == true ]]; then
+		RELEASE_MANIFEST=$(cat "$(dirname -- "${BASH_SOURCE[0]}")/test/$MANIFEST_JSON_PATH")
+	else
+		RELEASE_MANIFEST=$(curl --silent --connect-timeout 15 --retry 5 "$MANIFEST_URL")
+	fi
 	VERSION_MANIFEST=$(echo "$RELEASE_MANIFEST" | filter_by_channel "$CHANNEL" | filter_by_arch "$ARCH" | filter_by_version "$VERSION")
 fi
 
