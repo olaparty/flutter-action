@@ -163,20 +163,20 @@ if [[ ! -x "$CACHE_PATH/bin/flutter" ]]; then
 		REPO_URL="https://github.com/flutter/flutter.git" 
 	fi
 	if [[ -n "$REPO_URL" ]]; then
-		git clone --depth 1 -b "$CHANNEL" "$REPO_URL" "$CACHE_PATH"
+		git clone -b "$CHANNEL" "$REPO_URL" "$CACHE_PATH"
 	else
 		archive_url=$(echo "$VERSION_MANIFEST" | jq -r '.archive')
 		download_archive "$archive_url" "$CACHE_PATH"
 	fi
 fi
 
-{
-	echo "FLUTTER_ROOT=$CACHE_PATH"
-	echo "PUB_CACHE=$CACHE_PATH/.pub-cache"
-} >>"$GITHUB_ENV"
+# {
+# 	echo "FLUTTER_ROOT=$CACHE_PATH"
+# 	echo "PUB_CACHE=$CACHE_PATH/.pub-cache"
+# } >>"$GITHUB_ENV"
 
 {
 	echo "$CACHE_PATH/bin"
-	echo "$CACHE_PATH/bin/cache/dart-sdk/bin"
-	echo "$CACHE_PATH/.pub-cache/bin"
+	# echo "$CACHE_PATH/bin/cache/dart-sdk/bin"
+	# echo "$CACHE_PATH/.pub-cache/bin"
 } >>"$GITHUB_PATH"
