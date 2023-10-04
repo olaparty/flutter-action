@@ -70,6 +70,6 @@ runs:
     - run: |
         import os
         script_path = os.path.join(r'${{ github.action_path }}', 'setup.py')
-        os.system(f"python {script_path} --cache-path '${{ steps.flutter-action.outputs.CACHE-PATH }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ steps.flutter-action.outputs.VERSION }}' --arch ${{ steps.flutter-action.outputs.ARCHITECTURE }}' --channel ${{ steps.flutter-action.outputs.CHANNEL }}")
+        os.system(f"python {script_path} --cache-path r'${{ steps.flutter-action.outputs.CACHE-PATH }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ steps.flutter-action.outputs.VERSION }}' --arch ${{ steps.flutter-action.outputs.ARCHITECTURE }}' --channel ${{ steps.flutter-action.outputs.CHANNEL }}")
       shell: python
 
