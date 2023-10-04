@@ -209,7 +209,13 @@ def action():
         if repo_url:
             print(f"clone flutter repo from {repo_url} and channel {channel} to cache path {cache_path}")
             command = f"git clone -b {channel} {repo_url} {cache_path}"
-            subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if result.returncode == 0:
+                print("Git command executed successfully.")
+                print("Output:", result.stdout.decode('utf-8'))
+            else:
+                print("Git command failed.")
+                print("Error:", result.stderr.decode('utf-8'))
         else:
             archive_url = version_manifest['archive']
             print(f"download flutter archive from {archive_url} and cache path {cache_path}")
