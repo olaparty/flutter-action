@@ -8,14 +8,28 @@ import shutil
 import zipfile
 import tarfile
 import argparse
-import requests
+import importlib
+import subprocess
 
-def check_command(command):
+try:
+    import requests
+except ImportError:
+    print("The requests module is not installed, attempting to install...")
+
+    # Use subprocess to run the pip install command
     try:
-        subprocess.check_output(["command", "-v", command])
-        return True
+        os.system("pip3 install requests")
     except subprocess.CalledProcessError:
-        return False
+        print("Installation failed. Please install the requests module manually.")
+    else:
+        print("The requests module has been successfully installed.")
+
+# Attempt to import the requests module again
+try:
+    import requests
+except ImportError:
+    print("Failed to import the requests module. Please check the installation.")
+
 
 def filter_by_channel(data, channel):
     return [release for release in data['releases'] if release['channel'] == 'any' or release['channel'] == channel]
@@ -79,15 +93,18 @@ def expand_key(key, version_manifest, os_name):
 
     return key
 
+def set_github_output(key, value):
+    # Format the key-value pair as a string
+    output_str = f"::{key}::{value}"
+
+    # Print the string to stdout, which GitHub Actions will capture
+    print(output_str)
+
 def main():
-    os_name = os.environ.get('RUNNER_OS', default='').lower()
+    os_name = os.environ.get('RUNNER_OS', default='macos').lower()
     manifest_base_url = "https://storage.googleapis.com/flutter_infra_release/releases"
     manifest_json_path = f"releases_{os_name}.json"
     manifest_url = f"{manifest_base_url}/{manifest_json_path}"
-
-    if not check_command('jq'):
-        print("jq not found, please install it, https://stedolan.github.io/jq/download/")
-        sys.exit(1)
 
     # Create the argument parser
     parser = argparse.ArgumentParser(description='Flutter Cache Setup')
@@ -176,12 +193,11 @@ def main():
             print(f"CACHE-KEY={cache_key}")
             print(f"CACHE-PATH={cache_path}")
         else:
-            with open(os.environ['GITHUB_OUTPUT'], 'a') as file:
-                file.write(f"CHANNEL={info_channel}\n")
-                file.write(f"VERSION={info_version}\n")
-                file.write(f"ARCHITECTURE={info_architecture}\n")
-                file.write(f"CACHE-KEY={cache_key}\n")
-                file.write(f"CACHE-PATH={cache_path}\n")
+            set_github_output('CHANNEL', info_channel)
+            set_github_output('VERSION', info_version)
+            set_github_output('ARCHITECTURE', info_architecture)
+            set_github_output('CACHE-KEY', cache_key)
+            set_github_output('CACHE-PATH', cache_path)
 
     cache_bin_folder = os.path.join(cache_path, 'bin')
     if not os.path.exists(os.path.join(cache_bin_folder, 'flutter')):
