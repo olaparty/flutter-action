@@ -140,10 +140,11 @@ def action():
     version = version if version else 'any'
     arch = arch if arch else 'x64'
 
-    if not cache_path:
+    if not cache_path or cache_path == '':
         cache_path = f"{os.environ.get('RUNNER_TEMP', default='')}/flutter/:channel:-:version:-:arch:"
         if os.environ.get('USE_CACHE') == 'false':
             cache_path = f"{os.environ.get('HOME')}/_flutter/:channel:-:version:-:arch:"
+            print(f"Using default cache path {cache_path}")
     
     if not cache_key:
         cache_key = "flutter-:os:-:channel:-:version:-:arch:-:hash:"
