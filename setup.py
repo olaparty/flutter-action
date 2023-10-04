@@ -1,21 +1,35 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
 import subprocess
 import json
-import requests
 import shutil
 import zipfile
 import tarfile
 import argparse
+import importlib
+import subprocess
 
-def check_command(command):
+try:
+    import requests
+except ImportError:
+    print("The requests module is not installed, attempting to install...")
+
+    # Use subprocess to run the pip install command
     try:
-        subprocess.check_output(["command", "-v", command])
-        return True
+        os.system("pip3 install requests")
     except subprocess.CalledProcessError:
-        return False
+        print("Installation failed. Please install the requests module manually.")
+    else:
+        print("The requests module has been successfully installed.")
+
+# Attempt to import the requests module again
+try:
+    import requests
+except ImportError:
+    print("Failed to import the requests module. Please check the installation.")
+
 
 def filter_by_channel(data, channel):
     return [release for release in data['releases'] if release['channel'] == 'any' or release['channel'] == channel]
@@ -79,15 +93,18 @@ def expand_key(key, version_manifest, os_name):
 
     return key
 
+def set_github_output(key, value):
+    # Format the key-value pair as a string
+    output_str = f"::{key}::{value}"
+
+    # Print the string to stdout, which GitHub Actions will capture
+    print(output_str)
+
 def main():
-    os_name = os.environ['RUNNER_OS'].lower()
+    os_name = os.environ.get('RUNNER_OS', default='macos').lower()
     manifest_base_url = "https://storage.googleapis.com/flutter_infra_release/releases"
     manifest_json_path = f"releases_{os_name}.json"
     manifest_url = f"{manifest_base_url}/{manifest_json_path}"
-
-    if not check_command('jq'):
-        print("jq not found, please install it, https://stedolan.github.io/jq/download/")
-        sys.exit(1)
 
     # Create the argument parser
     parser = argparse.ArgumentParser(description='Flutter Cache Setup')
@@ -107,6 +124,8 @@ def main():
                         help='Flutter version (e.g., v2.5.0)')
     parser.add_argument('-r', '--repo-url', dest='repo_url', default='',
                         help='URL of the Flutter repository')
+    parser.add_argument('--channel', dest='channel', default='stable',
+                        help='Flutter channel (e.g., stable)')
 
     # Parse the command line arguments
     args = parser.parse_args()
@@ -126,9 +145,9 @@ def main():
     arch = arch if arch else 'x64'
 
     if not cache_path:
-        cache_path = f"{os.environ['RUNNER_TEMP']}/flutter/:channel:-:version:-:arch:"
+        cache_path = f"{os.environ.get('RUNNER_TEMP', default='')}/flutter/:channel:-:version:-:arch:"
         if os.environ.get('USE_CACHE') == 'false':
-            cache_path = f"{os.environ['HOME']}/_flutter/:channel:-:version:-:arch:"
+            cache_path = f"{os.environ.get('HOME')}/_flutter/:channel:-:version:-:arch:"
     
     if not cache_key:
         cache_key = "flutter-:os:-:channel:-:version:-:arch:-:hash:"
@@ -174,12 +193,11 @@ def main():
             print(f"CACHE-KEY={cache_key}")
             print(f"CACHE-PATH={cache_path}")
         else:
-            with open(os.environ['GITHUB_OUTPUT'], 'a') as file:
-                file.write(f"CHANNEL={info_channel}\n")
-                file.write(f"VERSION={info_version}\n")
-                file.write(f"ARCHITECTURE={info_architecture}\n")
-                file.write(f"CACHE-KEY={cache_key}\n")
-                file.write(f"CACHE-PATH={cache_path}\n")
+            set_github_output('CHANNEL', info_channel)
+            set_github_output('VERSION', info_version)
+            set_github_output('ARCHITECTURE', info_architecture)
+            set_github_output('CACHE-KEY', cache_key)
+            set_github_output('CACHE-PATH', cache_path)
 
     cache_bin_folder = os.path.join(cache_path, 'bin')
     if not os.path.exists(os.path.join(cache_bin_folder, 'flutter')):
