@@ -53,7 +53,6 @@ runs:
       run: |
         echo $GITHUB_ACTION_PATH
         echo "sdfsfas"
-        # $GITHUB_ACTION_PATH/setup.sh -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
       shell: bash
     - if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v3
@@ -65,5 +64,4 @@ runs:
           ${{ steps.flutter-action.outputs.CACHE-KEY }}
     - run: |
         echo sdfasdfa
-        # $GITHUB_ACTION_PATH/setup.sh -c '${{ steps.flutter-action.outputs.CACHE-PATH }}' -r '${{ inputs.flutter-repo }}' -n '${{ steps.flutter-action.outputs.VERSION }}' -a '${{ steps.flutter-action.outputs.ARCHITECTURE }}' ${{ steps.flutter-action.outputs.CHANNEL }}
       shell: bash
