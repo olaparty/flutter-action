@@ -185,18 +185,18 @@ def main():
         info_version = version_manifest['version']
         info_architecture = version_manifest.get('dart_sdk_arch', 'x64')
 
-        if test_mode:
-            print(f"CHANNEL={info_channel}")
-            print(f"VERSION={info_version}")
-            print(f"ARCHITECTURE={info_architecture}")
-            print(f"CACHE-KEY={cache_key}")
-            print(f"CACHE-PATH={cache_path}")
-        else:
+        if not test_mode:
             set_github_output('CHANNEL', info_channel)
             set_github_output('VERSION', info_version)
             set_github_output('ARCHITECTURE', info_architecture)
             set_github_output('CACHE-KEY', cache_key)
             set_github_output('CACHE-PATH', cache_path)
+    
+    print(f"CHANNEL={info_channel}")
+    print(f"VERSION={info_version}")
+    print(f"ARCHITECTURE={info_architecture}")
+    print(f"CACHE-KEY={cache_key}")
+    print(f"CACHE-PATH={cache_path}")
 
     cache_bin_folder = os.path.join(cache_path, 'bin')
     if not os.path.exists(os.path.join(cache_bin_folder, 'flutter')):
@@ -204,9 +204,12 @@ def main():
             repo_url = 'https://github.com/flutter/flutter.git'
 
         if repo_url:
-            subprocess.run(['git', 'clone', '-b', channel, repo_url, cache_path])
+            print(f"clone flutter repo from {repo_url} and channel {channel} to cache path {cache_path}")
+            os.system(f"git clone -b {channel} {repo_url} {cache_path}")
+            # subprocess.run(['git', 'clone', '-b', channel, repo_url, cache_path])
         else:
             archive_url = version_manifest['archive']
+            print(f"download flutter archive from {archive_url} and cache path {cache_path}")
             download_archive(archive_url, cache_path)
     
     # Append the new path to the current GITHUB_PATH with a colon (:) separator
