@@ -92,12 +92,9 @@ def expand_key(key, version_manifest, os_name):
 
     return key
 
-def set_github_output(key, value):
-    # Format the key-value pair as a string
-    output_str = f"::{key}::{value}"
-
-    # Print the string to stdout, which GitHub Actions will capture
-    print(output_str)
+def set_github_output(name, value):
+    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+        print(f'{name}={value}', file=fh)
 
 def action():
     os_name = os.environ.get('RUNNER_OS', default='macos').lower()
