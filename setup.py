@@ -209,11 +209,10 @@ def action():
             archive_url = version_manifest['archive']
             print(f"download flutter archive from {archive_url} and cache path {cache_path}")
             download_archive(archive_url, cache_path)
-    
-    # Append the new path to the current GITHUB_PATH with a colon (:) separator
-    current_path = os.environ.get("GITHUB_PATH", "")
-    new_github_path = f"{current_path}:{cache_bin_folder}"
-    os.environ["GITHUB_PATH"] = new_github_path
+            
+    # Append the new path to the current GITHUB_PATH 
+    with open(os.environ['GITHUB_PATH'], 'a') as fp:
+        fp.write(f'{cache_bin_folder}\n')
 
 if __name__ == '__main__':
     action()
