@@ -146,7 +146,7 @@ def action():
             home_dir = os.environ.get('HOME')
             if not home_dir:
                 # home_dir = os.path.expanduser("~")
-                home_dir = Path.home()
+                home_dir = transform_path(Path.home(), os_name)
 
             cache_path = f"{home_dir}/_flutter/:channel:-:version:-:arch:"
             print(f"Using default cache path {cache_path}")
