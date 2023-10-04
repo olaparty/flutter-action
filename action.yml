@@ -54,11 +54,8 @@ runs:
       env:
         USE_CACHE: ${{inputs.cache}}
       run: |
-        import setup
-        import sys
-        sys.argv = ["setup.py", '-p', '-c','${{ inputs.cache-path }}', '-k',  '${{ inputs.cache-key }}', '-r', '${{ inputs.flutter-repo }}', '-n', '${{ inputs.flutter-version }}', '-a', '${{ inputs.architecture }}', ${{ inputs.channel }} ]
-        setup.main()
-      #$GITHUB_ACTION_PATH/setup.py -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
+        import os
+        os.system("${{ github.action_path }}/setup.py -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}")
       shell: python
     - if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v3
@@ -69,10 +66,7 @@ runs:
           ${{ steps.flutter-action.outputs.CACHE-KEY }}-${{ hashFiles('**/pubspec.lock') }}
           ${{ steps.flutter-action.outputs.CACHE-KEY }}
     - run: |
-        import setup
-        import sys
-        sys.argv = ["setup.py", '-c','${{ steps.flutter-action.outputs.CACHE-PATH }}', '-r',  '${{ inputs.flutter-repo }}', '-n', '${{ steps.flutter-action.outputs.VERSION }}', '-a', '${{ steps.flutter-action.outputs.ARCHITECTURE }}',  '${{ steps.flutter-action.outputs.CHANNEL }}']
-        setup.main()
-      # ${{ github.action_path }}/setup.py -c '${{ steps.flutter-action.outputs.CACHE-PATH }}' -r '${{ inputs.flutter-repo }}' -n '${{ steps.flutter-action.outputs.VERSION }}' -a '${{ steps.flutter-action.outputs.ARCHITECTURE }}' ${{ steps.flutter-action.outputs.CHANNEL }}
+        import os
+        os.system("${{ github.action_path }}/setup.py -c '${{ steps.flutter-action.outputs.CACHE-PATH }}' -r '${{ inputs.flutter-repo }}' -n '${{ steps.flutter-action.outputs.VERSION }}' -a '${{ steps.flutter-action.outputs.ARCHITECTURE }}' ${{ steps.flutter-action.outputs.CHANNEL }}")
       shell: python
 
