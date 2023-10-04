@@ -99,7 +99,7 @@ def set_github_output(key, value):
     # Print the string to stdout, which GitHub Actions will capture
     print(output_str)
 
-def main():
+def action():
     os_name = os.environ.get('RUNNER_OS', default='macos').lower()
     manifest_base_url = "https://storage.googleapis.com/flutter_infra_release/releases"
     manifest_json_path = f"releases_{os_name}.json"
@@ -179,24 +179,25 @@ def main():
 
     cache_key = expand_key(cache_key, version_manifest, os_name)
     cache_path = expand_key(transform_path(cache_path, os_name), version_manifest, os_name)
-
+    print(f"CACHE-KEY={cache_key}")
+    print(f"CACHE-PATH={cache_path}")
+    
     if print_only:
         info_channel = version_manifest['channel']
         info_version = version_manifest['version']
         info_architecture = version_manifest.get('dart_sdk_arch', 'x64')
 
+        print(f"CHANNEL={info_channel}")
+        print(f"VERSION={info_version}")
+        print(f"ARCHITECTURE={info_architecture}")
+        
         if not test_mode:
             set_github_output('CHANNEL', info_channel)
             set_github_output('VERSION', info_version)
             set_github_output('ARCHITECTURE', info_architecture)
             set_github_output('CACHE-KEY', cache_key)
             set_github_output('CACHE-PATH', cache_path)
-    
-    print(f"CHANNEL={info_channel}")
-    print(f"VERSION={info_version}")
-    print(f"ARCHITECTURE={info_architecture}")
-    print(f"CACHE-KEY={cache_key}")
-    print(f"CACHE-PATH={cache_path}")
+        
 
     cache_bin_folder = os.path.join(cache_path, 'bin')
     if not os.path.exists(os.path.join(cache_bin_folder, 'flutter')):
@@ -218,4 +219,4 @@ def main():
     os.environ["GITHUB_PATH"] = new_github_path
 
 if __name__ == '__main__':
-    main()
+    action()
