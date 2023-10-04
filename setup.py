@@ -1,14 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
 import subprocess
 import json
-import requests
 import shutil
 import zipfile
 import tarfile
 import argparse
+import requests
 
 def check_command(command):
     try:
@@ -80,7 +80,7 @@ def expand_key(key, version_manifest, os_name):
     return key
 
 def main():
-    os_name = os.environ['RUNNER_OS'].lower()
+    os_name = os.environ.get('RUNNER_OS', default='').lower()
     manifest_base_url = "https://storage.googleapis.com/flutter_infra_release/releases"
     manifest_json_path = f"releases_{os_name}.json"
     manifest_url = f"{manifest_base_url}/{manifest_json_path}"
@@ -107,6 +107,8 @@ def main():
                         help='Flutter version (e.g., v2.5.0)')
     parser.add_argument('-r', '--repo-url', dest='repo_url', default='',
                         help='URL of the Flutter repository')
+    parser.add_argument('--channel', dest='channel', default='stable',
+                        help='Flutter channel (e.g., stable)')
 
     # Parse the command line arguments
     args = parser.parse_args()
@@ -126,9 +128,9 @@ def main():
     arch = arch if arch else 'x64'
 
     if not cache_path:
-        cache_path = f"{os.environ['RUNNER_TEMP']}/flutter/:channel:-:version:-:arch:"
+        cache_path = f"{os.environ.get('RUNNER_TEMP', default='')}/flutter/:channel:-:version:-:arch:"
         if os.environ.get('USE_CACHE') == 'false':
-            cache_path = f"{os.environ['HOME']}/_flutter/:channel:-:version:-:arch:"
+            cache_path = f"{os.environ.get('HOME')}/_flutter/:channel:-:version:-:arch:"
     
     if not cache_key:
         cache_key = "flutter-:os:-:channel:-:version:-:arch:-:hash:"
