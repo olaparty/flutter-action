@@ -8,7 +8,7 @@ import shutil
 import zipfile
 import tarfile
 import argparse
-import subprocess
+from pathlib import Path
 
 try:
     import requests
@@ -139,11 +139,16 @@ def action():
     channel = args.channel if args.channel else 'stable'
     version = version if version else 'any'
     arch = arch if arch else 'x64'
-
-    if not cache_path:
+    if not cache_path or cache_path == "''":
         cache_path = f"{os.environ.get('RUNNER_TEMP', default='')}/flutter/:channel:-:version:-:arch:"
         if os.environ.get('USE_CACHE') == 'false':
-            cache_path = f"{os.environ.get('HOME')}/_flutter/:channel:-:version:-:arch:"
+            home_dir = os.environ.get('HOME')
+            if not home_dir:
+                # home_dir = os.path.expanduser("~")
+                home_dir = transform_path(f"{Path.home()}", os_name)
+
+            cache_path = f"{home_dir}/_flutter/:channel:-:version:-:arch:"
+            print(f"Using default cache path {cache_path}")
     
     if not cache_key:
         cache_key = "flutter-:os:-:channel:-:version:-:arch:-:hash:"
@@ -203,8 +208,14 @@ def action():
 
         if repo_url:
             print(f"clone flutter repo from {repo_url} and channel {channel} to cache path {cache_path}")
-            os.system(f"git clone -b {channel} {repo_url} {cache_path}")
-            # subprocess.run(['git', 'clone', '-b', channel, repo_url, cache_path])
+            command = f"git clone -b {channel} {repo_url} {cache_path}"
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if result.returncode == 0:
+                print("Git command executed successfully.")
+                print("Output:", result.stdout.decode('utf-8'))
+            else:
+                print("Git command failed.")
+                print("Error:", result.stderr.decode('utf-8'))
         else:
             archive_url = version_manifest['archive']
             print(f"download flutter archive from {archive_url} and cache path {cache_path}")

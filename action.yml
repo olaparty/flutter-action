@@ -32,7 +32,7 @@ inputs:
   architecture:
     description: 'The architecture of Flutter SDK executable (x64 or arm64)'
     required: false
-    default: '${{ runner.arch }}'
+    default: ${{ runner.arch }}
 outputs:
   CACHE-PATH:
     value: '${{ steps.flutter-action.outputs.CACHE-PATH }}'
@@ -57,7 +57,7 @@ runs:
       run: |
         import os
         script_path = os.path.join(r'${{ github.action_path }}',  'setup.py')
-        os.system(f"python {script_path} --print-only --cache-path '${{ inputs.cache-path }}' --cache-key '${{ inputs.cache-key }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ inputs.flutter-version }}' --arch '${{ inputs.architecture }}' --channel ${{ inputs.channel }}")
+        os.system(f"python {script_path} --print-only --cache-path '${{ inputs.cache-path }}' --cache-key '${{ inputs.cache-key }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ inputs.flutter-version }}' --arch ${{ inputs.architecture }} --channel ${{ inputs.channel }}")
       shell: python
     - if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v3
@@ -70,6 +70,7 @@ runs:
     - run: |
         import os
         script_path = os.path.join(r'${{ github.action_path }}', 'setup.py')
-        os.system(f"python {script_path} --cache-path '${{ steps.flutter-action.outputs.CACHE-PATH }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ steps.flutter-action.outputs.VERSION }}' --arch '${{ steps.flutter-action.outputs.ARCHITECTURE }}' --channel ${{ steps.flutter-action.outputs.CHANNEL }}")
+        cache_path = r"${{ steps.flutter-action.outputs.CACHE-PATH }}"
+        os.system(f"python {script_path} --cache-path {cache_path} --repo-url '${{ inputs.flutter-repo }}' --version '${{ steps.flutter-action.outputs.VERSION }}' --arch ${{ steps.flutter-action.outputs.ARCHITECTURE }} --channel ${{ steps.flutter-action.outputs.CHANNEL }}")
       shell: python
 
