@@ -55,7 +55,7 @@ runs:
         USE_CACHE: ${{inputs.cache}}
       run: |
         import os
-        script_path = os.path.join(${{ github.action_path }},'setup.py')
+        script_path = os.path.join('${{ github.action_path }}','setup.py')
         os.system(f"{script_path} -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}")
       shell: python
     - if: ${{ inputs.cache == 'true' }}
@@ -68,7 +68,7 @@ runs:
           ${{ steps.flutter-action.outputs.CACHE-KEY }}
     - run: |
         import os
-        script_path = os.path.join(${{ github.action_path }},'setup.py')
+        script_path = os.path.join('${{ github.action_path }}','setup.py')
         os.system(f"{script_path} -c '${{ steps.flutter-action.outputs.CACHE-PATH }}' -r '${{ inputs.flutter-repo }}' -n '${{ steps.flutter-action.outputs.VERSION }}' -a '${{ steps.flutter-action.outputs.ARCHITECTURE }}' ${{ steps.flutter-action.outputs.CHANNEL }}")
       shell: python
 
