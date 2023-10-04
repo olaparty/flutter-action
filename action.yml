@@ -52,7 +52,7 @@ runs:
         USE_CACHE: ${{inputs.cache}}
       run: |
         echo $GITHUB_ACTION_PATH
-        pwd
+        echo "sdfsfas"
         $GITHUB_ACTION_PATH/setup.sh -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
       shell: bash
     - if: ${{ inputs.cache == 'true' }}
