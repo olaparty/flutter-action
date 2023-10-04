@@ -139,8 +139,9 @@ def action():
     channel = args.channel if args.channel else 'stable'
     version = version if version else 'any'
     arch = arch if arch else 'x64'
-    print(f"!!!! cache path {cache_path}")
+    print(f"!!!!111 cache path {cache_path}")
     if not cache_path or cache_path == '':
+        print(f"!!!!222 cache path {cache_path}")
         cache_path = f"{os.environ.get('RUNNER_TEMP', default='')}/flutter/:channel:-:version:-:arch:"
         if os.environ.get('USE_CACHE') == 'false':
             cache_path = f"{os.environ.get('HOME')}/_flutter/:channel:-:version:-:arch:"
