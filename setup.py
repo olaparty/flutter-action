@@ -9,6 +9,7 @@ import zipfile
 import tarfile
 import argparse
 import subprocess
+from pathlib import Path
 
 try:
     import requests
@@ -139,12 +140,15 @@ def action():
     channel = args.channel if args.channel else 'stable'
     version = version if version else 'any'
     arch = arch if arch else 'x64'
-    print(f"!!!!111 cache path {cache_path}")
     if not cache_path or cache_path == "''":
-        print(f"!!!!222 cache path {cache_path} {os.environ.get('USE_CACHE')}")
         cache_path = f"{os.environ.get('RUNNER_TEMP', default='')}/flutter/:channel:-:version:-:arch:"
         if os.environ.get('USE_CACHE') == 'false':
-            cache_path = f"{os.environ.get('HOME')}/_flutter/:channel:-:version:-:arch:"
+            home_dir = os.environ.get('HOME')
+            if not home_dir:
+                # home_dir = os.path.expanduser("~")
+                home_dir = Path.home()
+
+            cache_path = f"{home_dir}/_flutter/:channel:-:version:-:arch:"
             print(f"Using default cache path {cache_path}")
     
     if not cache_key:
