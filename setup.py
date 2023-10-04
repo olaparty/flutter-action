@@ -8,7 +8,6 @@ import shutil
 import zipfile
 import tarfile
 import argparse
-import subprocess
 from pathlib import Path
 
 try:
@@ -209,8 +208,8 @@ def action():
 
         if repo_url:
             print(f"clone flutter repo from {repo_url} and channel {channel} to cache path {cache_path}")
-            os.system(f"git clone -b {channel} {repo_url} {cache_path}")
-            # subprocess.run(['git', 'clone', '-b', channel, repo_url, cache_path])
+            command = f"git clone -b {channel} {repo_url} {cache_path}"
+            subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
             archive_url = version_manifest['archive']
             print(f"download flutter archive from {archive_url} and cache path {cache_path}")
