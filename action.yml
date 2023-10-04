@@ -56,7 +56,7 @@ runs:
         sys.argv = ["setup.py", '-p', '-c','${{ inputs.cache-path }}', '-k',  '${{ inputs.cache-key }}', '-r', '${{ inputs.flutter-repo }}', '-n', '${{ inputs.flutter-version }}', '-a', '${{ inputs.architecture }}', ${{ inputs.channel }} ]
         setup.main()
       #$GITHUB_ACTION_PATH/setup.py -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
-      shell: python3
+      shell: python
     - if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v3
       with:
@@ -71,5 +71,5 @@ runs:
         sys.argv = ["setup.py", '-c','${{ steps.flutter-action.outputs.CACHE-PATH }}', '-r',  '${{ inputs.flutter-repo }}', '-n', '${{ steps.flutter-action.outputs.VERSION }}', '-a', '${{ steps.flutter-action.outputs.ARCHITECTURE }}',  '${{ steps.flutter-action.outputs.CHANNEL }}']
         setup.main()
       # ${{ github.action_path }}/setup.py -c '${{ steps.flutter-action.outputs.CACHE-PATH }}' -r '${{ inputs.flutter-repo }}' -n '${{ steps.flutter-action.outputs.VERSION }}' -a '${{ steps.flutter-action.outputs.ARCHITECTURE }}' ${{ steps.flutter-action.outputs.CHANNEL }}
-      shell: python3
+      shell: python
 
