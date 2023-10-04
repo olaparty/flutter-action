@@ -50,7 +50,10 @@ runs:
     - id: flutter-action
       env:
         USE_CACHE: ${{inputs.cache}}
-      run: $GITHUB_ACTION_PATH/setup.sh -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
+      run: |
+        echo $GITHUB_ACTION_PATH
+        pwd
+        $GITHUB_ACTION_PATH/setup.sh -p -c '${{ inputs.cache-path }}' -k '${{ inputs.cache-key }}' -r '${{ inputs.flutter-repo }}' -n '${{ inputs.flutter-version }}' -a '${{ inputs.architecture }}' ${{ inputs.channel }}
       shell: bash
     - if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v3
