@@ -8,7 +8,6 @@ import shutil
 import zipfile
 import tarfile
 import argparse
-import importlib
 import subprocess
 
 try:
