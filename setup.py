@@ -45,7 +45,7 @@ def filter_by_version(data, version):
 
 def not_found_error(channel, version, arch):
     print(f"Unable to determine Flutter version for channel: {channel} version: {version} architecture: {arch}")
-    sys.exit(1)
+    #sys.exit(1)
 
 def transform_path(path, os_name):
     if os_name == 'windows':
@@ -175,10 +175,21 @@ def action():
         print(f"release_manifest:{release_manifest}\n,arch_releases: {arch_releases}, version:{version}, ")
         version_releases = filter_by_version(arch_releases, version)
 
-        if not version_releases:
+        if  version_releases:
+            version_manifest = version_releases[0]
+            
+        else:
             not_found_error(channel, version, arch)
+            version_manifest = {
+                'channel': channel,
+                'version': channel,
+                'dart_sdk_arch': arch,
+                'hash': channel,
+                'sha256': channel
+            }
+            print(f"Use default version_manifest: {version_manifest}")
 
-        version_manifest = version_releases[0]
+        
 
     cache_key = expand_key(cache_key, version_manifest, os_name)
     cache_path = expand_key(transform_path(cache_path, os_name), version_manifest, os_name)
