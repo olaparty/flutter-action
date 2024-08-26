@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
+from __future__ import print_function
 import os
 import sys
 import subprocess
@@ -8,6 +9,12 @@ import shutil
 import zipfile
 import tarfile
 import argparse
+
+# Python 2/3 compatibility
+try:
+    input = raw_input
+except NameError:
+    pass
 
 try:
     import requests
@@ -39,7 +46,7 @@ def transform_path(path, os_name):
 
 def download_and_extract_archive(archive_url, dest_folder):
     archive_name = os.path.basename(archive_url)
-    archive_local = os.path.join(os.environ['RUNNER_TEMP'], archive_name)
+    archive_local = os.path.join(os.environ.get('RUNNER_TEMP', '.'), archive_name)
 
     response = requests.get(archive_url, timeout=15)
     response.raise_for_status()
@@ -51,9 +58,9 @@ def download_and_extract_archive(archive_url, dest_folder):
 
     if archive_name.endswith('.zip'):
         with zipfile.ZipFile(archive_local, 'r') as zip_ref:
-            zip_ref.extractall(os.environ['RUNNER_TEMP'])
+            zip_ref.extractall(os.environ.get('RUNNER_TEMP', '.'))
         shutil.rmtree(dest_folder)  # Remove the folder to allow a simple rename
-        os.rename(os.path.join(os.environ['RUNNER_TEMP'], 'flutter'), dest_folder)
+        os.rename(os.path.join(os.environ.get('RUNNER_TEMP', '.'), 'flutter'), dest_folder)
     else:
         with tarfile.open(archive_local, 'r') as tar_ref:
             tar_ref.extractall(dest_folder)
@@ -74,8 +81,8 @@ def expand_key(key, version_manifest, os_name):
     return key
 
 def set_github_output(name, value):
-    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        print('{}={}'.format(name, value), file=fh)
+    with open(os.environ.get('GITHUB_OUTPUT', os.devnull), 'a') as fh:
+        fh.write("{}={}\n".format(name, value))
 
 def action():
     parser = argparse.ArgumentParser(description='Flutter Cache Setup')
@@ -100,7 +107,7 @@ def action():
     arch = args.arch.lower() or 'x64'
 
     if not args.cache_path or args.cache_path == "''":
-        cache_path = os.path.join(os.environ.get('RUNNER_TEMP', ''), "flutter/:channel:-:version:-:arch:")
+        cache_path = os.path.join(os.environ.get('RUNNER_TEMP', '.'), "flutter/:channel:-:version:-:arch:")
         if os.environ.get('USE_CACHE') == 'false':
             home_dir = os.environ.get('HOME') or os.path.expanduser('~')
             cache_path = os.path.join(home_dir, "_flutter/:channel:-:version:-:arch:")
@@ -161,14 +168,14 @@ def action():
 
             if args.repo_url:
                 print("Cloning Flutter repo from {} (channel: {}) to {}".format(args.repo_url, channel, cache_path))
-                subprocess.run(["git", "clone", "-b", channel, args.repo_url, cache_path], check=True)
+                subprocess.check_call(["git", "clone", "-b", channel, args.repo_url, cache_path])
             else:
                 archive_url = version_manifest['archive']
                 print("Downloading Flutter archive from {} to {}".format(archive_url, cache_path))
                 download_and_extract_archive(archive_url, cache_path)
 
-        with open(os.environ['GITHUB_PATH'], 'a') as fp:
-            fp.write('{}\n'.format(cache_bin_folder))
+        with open(os.environ.get('GITHUB_PATH', os.devnull), 'a') as fp:
+            fp.write("{}\n".format(cache_bin_folder))
 
 if __name__ == '__main__':
     action()
