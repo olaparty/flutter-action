@@ -172,6 +172,7 @@ def action():
 
         channel_releases = filter_by_channel(release_manifest, channel)
         arch_releases = filter_by_arch(channel_releases, arch)
+        print(f"release_manifest:{release_manifest}\n,arch_releases: {arch_releases}, version:{version}, ")
         version_releases = filter_by_version(arch_releases, version)
 
         if not version_releases:
