@@ -9,8 +9,6 @@ import zipfile
 import tarfile
 import argparse
 from pathlib import Path
-from functools import lru_cache
-from typing import List, Dict, Any
 
 try:
     import requests
@@ -25,7 +23,7 @@ except ImportError:
     else:
         print("The requests module has been successfully installed.")
 
-def filter_releases(data: Dict[str, Any], channel: str, arch: str, version: str) -> List[Dict[str, Any]]:
+def filter_releases(data, channel, arch, version):
     releases = data['releases']
     releases = [r for r in releases if r['channel'] in ('any', channel)]
     releases = [r for r in releases if r.get('dart_sdk_arch') == arch or (arch == 'x64' and 'dart_sdk_arch' not in r)]
@@ -37,32 +35,33 @@ def filter_releases(data: Dict[str, Any], channel: str, arch: str, version: str)
     
     return releases[:1] if version == 'any' else releases
 
-def transform_path(path: str, os_name: str) -> str:
+def transform_path(path, os_name):
     return path.lstrip('/').replace('/', '\\') if os_name == 'windows' else path
 
-def download_and_extract_archive(archive_url: str, dest_folder: str):
+def download_and_extract_archive(archive_url, dest_folder):
     archive_name = os.path.basename(archive_url)
     archive_local = Path(os.environ['RUNNER_TEMP']) / archive_name
 
     response = requests.get(archive_url, timeout=15)
     response.raise_for_status()
 
-    archive_local.write_bytes(response.content)
+    with open(str(archive_local), 'wb') as f:
+        f.write(response.content)
 
     os.makedirs(dest_folder, exist_ok=True)
 
     if archive_name.endswith('.zip'):
-        with zipfile.ZipFile(archive_local, 'r') as zip_ref:
+        with zipfile.ZipFile(str(archive_local), 'r') as zip_ref:
             zip_ref.extractall(os.environ['RUNNER_TEMP'])
         shutil.rmtree(dest_folder)  # Remove the folder to allow a simple rename
-        os.rename(Path(os.environ['RUNNER_TEMP']) / 'flutter', dest_folder)
+        os.rename(str(Path(os.environ['RUNNER_TEMP']) / 'flutter'), dest_folder)
     else:
-        with tarfile.open(archive_local, 'r') as tar_ref:
+        with tarfile.open(str(archive_local), 'r') as tar_ref:
             tar_ref.extractall(dest_folder)
 
-    archive_local.unlink()
+    os.remove(str(archive_local))
 
-def expand_key(key: str, version_manifest: Dict[str, str], os_name: str) -> str:
+def expand_key(key, version_manifest, os_name):
     replacements = {
         ':channel:': version_manifest['channel'],
         ':version:': version_manifest['version'],
@@ -75,7 +74,7 @@ def expand_key(key: str, version_manifest: Dict[str, str], os_name: str) -> str:
         key = key.replace(placeholder, value)
     return key
 
-def set_github_output(name: str, value: str):
+def set_github_output(name, value):
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
         print(f'{name}={value}', file=fh)
 
@@ -102,13 +101,13 @@ def action():
     arch = args.arch.lower() or 'x64'
 
     if not args.cache_path or args.cache_path == "''":
-        cache_path = Path(os.environ.get('RUNNER_TEMP', '')) / "flutter/:channel:-:version:-:arch:"
+        cache_path = os.path.join(os.environ.get('RUNNER_TEMP', ''), "flutter/:channel:-:version:-:arch:")
         if os.environ.get('USE_CACHE') == 'false':
-            home_dir = os.environ.get('HOME') or Path.home()
-            cache_path = Path(home_dir) / "_flutter/:channel:-:version:-:arch:"
+            home_dir = os.environ.get('HOME') or str(Path.home())
+            cache_path = os.path.join(home_dir, "_flutter/:channel:-:version:-:arch:")
         print(f"Using default cache path {cache_path}")
     else:
-        cache_path = Path(args.cache_path)
+        cache_path = args.cache_path
 
     cache_key = args.cache_key or "flutter-:os:-:channel:-:version:-:arch:-:hash:"
 
@@ -122,7 +121,7 @@ def action():
         }
     else:
         if args.test_mode:
-            with open(Path(__file__).parent / 'test' / manifest_json_path) as file:
+            with open(os.path.join(os.path.dirname(__file__), 'test', manifest_json_path)) as file:
                 release_manifest = json.load(file)
         else:
             response = requests.get(manifest_url, timeout=15)
@@ -139,7 +138,7 @@ def action():
         }
 
     cache_key = expand_key(cache_key, version_manifest, os_name)
-    cache_path = Path(expand_key(str(cache_path), version_manifest, os_name))
+    cache_path = transform_path(expand_key(cache_path, version_manifest, os_name), os_name)
     print(f"CACHE-KEY={cache_key}")
     print(f"CACHE-PATH={cache_path}")
 
@@ -149,25 +148,25 @@ def action():
             'VERSION': version_manifest['version'],
             'ARCHITECTURE': version_manifest.get('dart_sdk_arch', 'x64'),
             'CACHE-KEY': cache_key,
-            'CACHE-PATH': str(cache_path)
+            'CACHE-PATH': cache_path
         }
         for key, value in info.items():
             print(f"{key}={value}")
             if not args.test_mode:
                 set_github_output(key, value)
     else:
-        cache_bin_folder = cache_path / 'bin'
-        if not (cache_bin_folder / 'flutter').exists():
+        cache_bin_folder = os.path.join(cache_path, 'bin')
+        if not os.path.exists(os.path.join(cache_bin_folder, 'flutter')):
             if channel == 'master' and not args.repo_url:
                 args.repo_url = 'https://github.com/flutter/flutter.git'
 
             if args.repo_url:
                 print(f"Cloning Flutter repo from {args.repo_url} (channel: {channel}) to {cache_path}")
-                subprocess.run(["git", "clone", "-b", channel, args.repo_url, str(cache_path)], check=True)
+                subprocess.run(["git", "clone", "-b", channel, args.repo_url, cache_path], check=True)
             else:
                 archive_url = version_manifest['archive']
                 print(f"Downloading Flutter archive from {archive_url} to {cache_path}")
-                download_and_extract_archive(archive_url, str(cache_path))
+                download_and_extract_archive(archive_url, cache_path)
 
         with open(os.environ['GITHUB_PATH'], 'a') as fp:
             fp.write(f'{cache_bin_folder}\n')
