@@ -43,9 +43,6 @@ def filter_by_version(data, version):
     else:
         return [release for release in data if release['version'] == version or (release['version'].startswith(version + '.') and release['version'] != version)]
 
-def not_found_error(channel, version, arch):
-    print(f"Unable to determine Flutter version for channel: {channel} version: {version} architecture: {arch}")
-    #sys.exit(1)
 
 def transform_path(path, os_name):
     if os_name == 'windows':
@@ -179,7 +176,6 @@ def action():
             version_manifest = version_releases[0]
             
         else:
-            not_found_error(channel, version, arch)
             version_manifest = {
                 'channel': channel,
                 'version': channel,
