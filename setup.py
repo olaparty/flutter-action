@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -7,7 +8,6 @@ import shutil
 import zipfile
 import tarfile
 import argparse
-from pathlib import Path
 
 try:
     import requests
@@ -30,7 +30,7 @@ def filter_releases(data, channel, arch, version):
     if version != 'any':
         version = version.lstrip('v')
         releases = [r for r in releases if r['version'] == version or 
-                    (r['version'].startswith(f"{version}.") and r['version'] != version)]
+                    (r['version'].startswith("{}.".format(version)) and r['version'] != version)]
     
     return releases[:1] if version == 'any' else releases
 
@@ -39,26 +39,26 @@ def transform_path(path, os_name):
 
 def download_and_extract_archive(archive_url, dest_folder):
     archive_name = os.path.basename(archive_url)
-    archive_local = Path(os.environ['RUNNER_TEMP']) / archive_name
+    archive_local = os.path.join(os.environ['RUNNER_TEMP'], archive_name)
 
     response = requests.get(archive_url, timeout=15)
     response.raise_for_status()
 
-    with open(str(archive_local), 'wb') as f:
+    with open(archive_local, 'wb') as f:
         f.write(response.content)
 
     os.makedirs(dest_folder, exist_ok=True)
 
     if archive_name.endswith('.zip'):
-        with zipfile.ZipFile(str(archive_local), 'r') as zip_ref:
+        with zipfile.ZipFile(archive_local, 'r') as zip_ref:
             zip_ref.extractall(os.environ['RUNNER_TEMP'])
         shutil.rmtree(dest_folder)  # Remove the folder to allow a simple rename
-        os.rename(str(Path(os.environ['RUNNER_TEMP']) / 'flutter'), dest_folder)
+        os.rename(os.path.join(os.environ['RUNNER_TEMP'], 'flutter'), dest_folder)
     else:
-        with tarfile.open(str(archive_local), 'r') as tar_ref:
+        with tarfile.open(archive_local, 'r') as tar_ref:
             tar_ref.extractall(dest_folder)
 
-    os.remove(str(archive_local))
+    os.remove(archive_local)
 
 def expand_key(key, version_manifest, os_name):
     replacements = {
@@ -75,7 +75,7 @@ def expand_key(key, version_manifest, os_name):
 
 def set_github_output(name, value):
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        print(f'{name}={value}', file=fh)
+        print('{}={}'.format(name, value), file=fh)
 
 def action():
     parser = argparse.ArgumentParser(description='Flutter Cache Setup')
@@ -92,8 +92,8 @@ def action():
 
     os_name = os.environ.get('RUNNER_OS', 'macos').lower()
     manifest_base_url = "https://storage.googleapis.com/flutter_infra_release/releases"
-    manifest_json_path = f"releases_{os_name}.json"
-    manifest_url = f"{manifest_base_url}/{manifest_json_path}"
+    manifest_json_path = "releases_{}.json".format(os_name)
+    manifest_url = "{}/{}".format(manifest_base_url, manifest_json_path)
 
     channel = args.channel or 'stable'
     version = args.version or 'any'
@@ -102,9 +102,9 @@ def action():
     if not args.cache_path or args.cache_path == "''":
         cache_path = os.path.join(os.environ.get('RUNNER_TEMP', ''), "flutter/:channel:-:version:-:arch:")
         if os.environ.get('USE_CACHE') == 'false':
-            home_dir = os.environ.get('HOME') or str(Path.home())
+            home_dir = os.environ.get('HOME') or os.path.expanduser('~')
             cache_path = os.path.join(home_dir, "_flutter/:channel:-:version:-:arch:")
-        print(f"Using default cache path {cache_path}")
+        print("Using default cache path {}".format(cache_path))
     else:
         cache_path = args.cache_path
 
@@ -138,8 +138,8 @@ def action():
 
     cache_key = expand_key(cache_key, version_manifest, os_name)
     cache_path = transform_path(expand_key(cache_path, version_manifest, os_name), os_name)
-    print(f"CACHE-KEY={cache_key}")
-    print(f"CACHE-PATH={cache_path}")
+    print("CACHE-KEY={}".format(cache_key))
+    print("CACHE-PATH={}".format(cache_path))
 
     if args.print_only:
         info = {
@@ -150,7 +150,7 @@ def action():
             'CACHE-PATH': cache_path
         }
         for key, value in info.items():
-            print(f"{key}={value}")
+            print("{}={}".format(key, value))
             if not args.test_mode:
                 set_github_output(key, value)
     else:
@@ -160,15 +160,15 @@ def action():
                 args.repo_url = 'https://github.com/flutter/flutter.git'
 
             if args.repo_url:
-                print(f"Cloning Flutter repo from {args.repo_url} (channel: {channel}) to {cache_path}")
+                print("Cloning Flutter repo from {} (channel: {}) to {}".format(args.repo_url, channel, cache_path))
                 subprocess.run(["git", "clone", "-b", channel, args.repo_url, cache_path], check=True)
             else:
                 archive_url = version_manifest['archive']
-                print(f"Downloading Flutter archive from {archive_url} to {cache_path}")
+                print("Downloading Flutter archive from {} to {}".format(archive_url, cache_path))
                 download_and_extract_archive(archive_url, cache_path)
 
         with open(os.environ['GITHUB_PATH'], 'a') as fp:
-            fp.write(f'{cache_bin_folder}\n')
+            fp.write('{}\n'.format(cache_bin_folder))
 
 if __name__ == '__main__':
     action()
