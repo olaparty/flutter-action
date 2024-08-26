@@ -56,11 +56,12 @@ runs:
         USE_CACHE: ${{inputs.cache}}
       run: |
         import subprocess
+        import os
         script_path = os.path.join(r'${{ github.action_path }}',  'setup.py')
         command = [
             "python", script_path,
             "--print-only",
-            "--cache-path", "${{ inputs.cache-path }}"",
+            "--cache-path", "${{ inputs.cache-path }}",
             "--cache-key", "${{ inputs.cache-key }}",
             "--repo-url", "${{ inputs.flutter-repo }}",
             "--version", "${{ inputs.flutter-version }}",
@@ -84,6 +85,7 @@ runs:
           ${{ steps.flutter-action.outputs.CACHE-KEY }}
     - run: |
         import subprocess
+        import os
         script_path = os.path.join(r'${{ github.action_path }}', 'setup.py')
         cache_path = r"${{ steps.flutter-action.outputs.CACHE-PATH }}"
 
