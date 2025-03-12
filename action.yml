@@ -1,63 +1,70 @@
-name: 'Flutter action'
-description: 'Setup your runner with Flutter environment'
-author: 'Alif Rachmawadi'
+name: "Flutter action"
+description: "Setup your runner with Flutter environment"
+author: "Alif Rachmawadi"
 branding:
-  icon: 'maximize'
-  color: 'blue'
+  icon: "maximize"
+  color: "blue"
 inputs:
   flutter-version:
-    description: 'The Flutter version to make available on the path'
+    description: "The Flutter version to make available on the path"
     required: false
-    default: 'any'
+    default: "any"
   channel:
-    description: 'The Flutter build release channel'
+    description: "The Flutter build release channel"
     required: false
-    default: 'stable'
+    default: "stable"
   flutter-repo:
-    description: 'The Flutter repo url'
+    description: "The Flutter repo url"
     required: false
-    default: ''
+    default: ""
   cache:
-    description: 'Cache the Flutter SDK'
+    description: "Cache the Flutter SDK"
     required: false
-    default: 'false'
+    default: "false"
   cache-key:
-    description: 'Identifier for the Flutter SDK cache'
+    description: "Identifier for the Flutter SDK cache"
     required: false
-    default: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+    default: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
   cache-path:
-    description: 'Flutter SDK cache path'
+    description: "Flutter SDK cache path"
     required: false
-    default: ''
+    default: ""
   architecture:
-    description: 'The architecture of Flutter SDK executable (x64 or arm64)'
+    description: "The architecture of Flutter SDK executable (x64 or arm64)"
     required: false
     default: ${{ runner.arch }}
 outputs:
   CACHE-PATH:
-    value: '${{ steps.flutter-action.outputs.CACHE-PATH }}'
+    value: "${{ steps.flutter-action.outputs.CACHE-PATH }}"
   CACHE-KEY:
-    value: '${{ steps.flutter-action.outputs.CACHE-KEY }}'
+    value: "${{ steps.flutter-action.outputs.CACHE-KEY }}"
   CHANNEL:
-    value: '${{ steps.flutter-action.outputs.CHANNEL }}'
+    value: "${{ steps.flutter-action.outputs.CHANNEL }}"
   VERSION:
-    value: '${{ steps.flutter-action.outputs.VERSION }}'
+    value: "${{ steps.flutter-action.outputs.VERSION }}"
   ARCHITECTURE:
-    value: '${{ steps.flutter-action.outputs.ARCHITECTURE }}'
+    value: "${{ steps.flutter-action.outputs.ARCHITECTURE }}"
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - uses: actions/setup-python@v4
       if: ${{ runner.os != 'macos' }}
       with:
-        python-version: '3.10' 
+        python-version: "3.10"
     - id: flutter-action
       env:
         USE_CACHE: ${{inputs.cache}}
       run: |
         import os
+        import subprocess
         script_path = os.path.join(r'${{ github.action_path }}',  'setup.py')
-        os.system(f"python {script_path} --print-only --cache-path '${{ inputs.cache-path }}' --cache-key '${{ inputs.cache-key }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ inputs.flutter-version }}' --arch ${{ inputs.architecture }} --channel ${{ inputs.channel }}")
+        # Check if python3 is available
+        try:
+            subprocess.check_output(['python3', '--version'], stderr=subprocess.STDOUT)
+            python_cmd = 'python3'
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            python_cmd = 'python'
+        os.system(f"{python_cmd} {script_path} --print-only --cache-path '${{ inputs.cache-path }}' --cache-key '${{ inputs.cache-key }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ inputs.flutter-version }}' --arch ${{ inputs.architecture }} --channel ${{ inputs.channel }}")
       shell: python
     - if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v3
@@ -73,4 +80,3 @@ runs:
         cache_path = r"${{ steps.flutter-action.outputs.CACHE-PATH }}"
         os.system(f"python {script_path} --cache-path {cache_path} --repo-url '${{ inputs.flutter-repo }}' --version '${{ steps.flutter-action.outputs.VERSION }}' --arch ${{ steps.flutter-action.outputs.ARCHITECTURE }} --channel ${{ steps.flutter-action.outputs.CHANNEL }}")
       shell: python
-
