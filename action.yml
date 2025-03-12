@@ -48,7 +48,6 @@ runs:
   using: "composite"
   steps:
     - uses: actions/setup-python@v4
-      if: ${{ runner.os != 'macos' }}
       with:
         python-version: "3.10"
     - id: flutter-action
@@ -56,15 +55,8 @@ runs:
         USE_CACHE: ${{inputs.cache}}
       run: |
         import os
-        import subprocess
         script_path = os.path.join(r'${{ github.action_path }}',  'setup.py')
-        # Check if python3 is available
-        try:
-            subprocess.check_output(['python3', '--version'], stderr=subprocess.STDOUT)
-            python_cmd = 'python3'
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            python_cmd = 'python'
-        os.system(f"{python_cmd} {script_path} --print-only --cache-path '${{ inputs.cache-path }}' --cache-key '${{ inputs.cache-key }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ inputs.flutter-version }}' --arch ${{ inputs.architecture }} --channel ${{ inputs.channel }}")
+        os.system(f"python {script_path} --print-only --cache-path '${{ inputs.cache-path }}' --cache-key '${{ inputs.cache-key }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ inputs.flutter-version }}' --arch ${{ inputs.architecture }} --channel ${{ inputs.channel }}")
       shell: python
     - if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v3
