@@ -55,13 +55,15 @@ runs:
       if: ${{ runner.os == 'macos' }}
       shell: bash
       run: |
-        echo "/usr/local/bin:/opt/homebrew/bin/" >> $GITHUB_PATH
+        echo "/opt/homebrew/bin:/usr/local/bin" >> $GITHUB_PATH
         echo "Added $(which python) to PATH"
     - id: flutter-action
       env:
         USE_CACHE: ${{inputs.cache}}
       run: |
         import os
+        import sys
+        print("Python version: %s" % (sys.version,))
         script_path = os.path.join(r'${{ github.action_path }}',  'setup.py')
         os.system(f"python {script_path} --print-only --cache-path '${{ inputs.cache-path }}' --cache-key '${{ inputs.cache-key }}' --repo-url '${{ inputs.flutter-repo }}' --version '${{ inputs.flutter-version }}' --arch ${{ inputs.architecture }} --channel ${{ inputs.channel }}")
       shell: python
